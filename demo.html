@@ -1,0 +1,112 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Lume Load Demo</title>
+<style>
+body { font-family: Arial; margin: 8px; color: #eee; background: #111; }
+.container { max-width: 40em; margin: auto; padding: 1em; }
+.block { background: #222; padding: 1em; border-radius: 8px; margin-bottom: 1em; }
+label { display: block; margin-bottom: 4px; }
+input[type="range"], select { width: 100%; padding: 4px 0; margin-bottom: 8px; border-radius: 6px; background: #333; color: #eee; }
+input[type="range"].hue { background: linear-gradient(to right, red, yellow, lime, cyan, blue, magenta, red); }
+button { width: 100%; padding: 16px; border: 0; border-radius: 6px; background: #555; color: #022; font-size: 1.1em; }
+button.active { background: #7b2; color: #111; }
+</style>
+</head>
+<body>
+
+<div class="container">
+  <div class="block">
+    <label for="modeSelect">Mode</label>
+    <select id="modeSelect">
+      <option value="1">Static</option>
+      <option value="2">Sine</option>
+      <option value="3">Rect</option>
+      <option value="4">Saw</option>
+      <option value="5">Triangle</option>
+    </select>
+
+    <label>LEDs up to <span id="ledIndexVal"></span></label>
+    <input id="ledIndexRange" type="range" min="0" max="60" value="0">
+
+    <label>Frequency (Hz) <span id="freqVal"></span></label>
+    <input id="freqRange" type="range" min="0.1" max="2" step="0.1" value="0.5">
+
+    <label>Duty (%) <span id="dutyVal"></span></label>
+    <input id="dutyRange" type="range" min="0" max="100" value="50">
+
+    <label>Hue (&deg;) <span id="hueVal"></span></label>
+    <input id="hueRange" type="range" min="0" max="360" value="0" class="hue">
+
+    <label>Saturation (%) <span id="satVal"></span></label>
+    <input id="satRange" type="range" min="0" max="100" value="100">
+
+    <label>Brightness (%) <span id="brightnessVal"></span></label>
+    <input id="brightnessRange" type="range" min="0" max="100" value="50">
+
+    <button id="btnPower">Power</button>
+  </div>
+</div>
+
+<script>
+let state = {
+  mode:1, ledIndex:0, freq:0.5, duty:50,
+  hue:180, sat:100, brightness:100, ledEnabled:true
+};
+
+function hsvToRgb(h,s,v){
+  h/=60; s/=100; v/=100;
+  let i=Math.floor(h), f=h-i, p=v*(1-s), q=v*(1-s*f), t=v*(1-s*(1-f));
+  switch(i%6){case 0:return [v,t,p];case 1:return [q,v,p];case 2:return [p,v,t];
+  case 3:return [p,q,v];case 4:return [t,p,v];case 5:return [v,p,q];}
+  return [0,0,0];
+}
+
+function sendState(key,value){
+  // Фейковая отправка, ничего не делаем
+  state[key]=value;
+  updateUI();
+}
+
+function bind(id,key,parseFn=x=>x){
+  const el=document.getElementById(id);
+  el.oninput = ()=>sendState(key,parseFn(el.value));
+}
+
+function updateUI(){
+  const fields=['ledIndex','freq','duty','hue','sat','brightness'];
+  fields.forEach(k=>{
+    const el=document.getElementById(k+'Val');
+    if(el) el.textContent=state[k];
+  });
+  document.getElementById('modeSelect').value = state.mode;
+  document.getElementById('ledIndexRange').value = state.ledIndex;
+  document.getElementById('brightnessRange').value = state.brightness;
+  document.getElementById('freqRange').value = state.freq;
+  document.getElementById('dutyRange').value = state.duty;
+  document.getElementById('hueRange').value = state.hue;
+  document.getElementById('satRange').value = state.sat;
+
+  const btn=document.getElementById('btnPower');
+  btn.classList.toggle('active',state.ledEnabled);
+  if(state.ledEnabled){
+    const [r,g,b]=hsvToRgb(state.hue,state.sat,state.brightness);
+    btn.style.background=`rgb(${Math.round(r*255)},${Math.round(g*255)},${Math.round(b*255)})`;
+  } else btn.style.background='#555';
+}
+
+bind('modeSelect','mode',v=>parseInt(v));
+bind('ledIndexRange','ledIndex',v=>parseInt(v));
+bind('brightnessRange','brightness',v=>parseInt(v));
+bind('freqRange','freq',v=>parseFloat(v));
+bind('dutyRange','duty',v=>parseInt(v));
+bind('hueRange','hue',v=>parseInt(v));
+bind('satRange','sat',v=>parseInt(v));
+
+document.getElementById('btnPower').onclick=()=>sendState('ledEnabled',!state.ledEnabled);
+
+updateUI();
+</script>
+</body>
+</html>
