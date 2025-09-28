@@ -8,7 +8,7 @@
 
 UG56 Lume Load is a compact, browser-based tool for controlling addressable LED strips using an ESP8266 or ESP32 microcontroller. It provides an intuitive interface to manage LED animations, colors, and brightness in real-time via WebSocket, optimized for low-resource devices like the ESP-01.
 
-![UG56 Lume Load Interface](images/LumeLoad.JPG)
+![UG56 Lume Load Interface](images/LumeLoad.jpg)
 *Screenshot of the web interface showing sliders, power button, and active LEDs.*
 
 ---
